@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+/* Dark mode is toggled by a `.dark` class on <html> (see BaseLayout.astro),
+   not purely by prefers-color-scheme, so a manual toggle can override it. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
