@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import TipCalculator from '../components/tools/TipCalculator.svelte';
+import PrivacyNote from '../components/PrivacyNote.astro';
 ---
 
 <BaseLayout
@@ -8,9 +9,7 @@ import TipCalculator from '../components/tools/TipCalculator.svelte';
   description="Calculate a tip and split the bill evenly between any number of people. Handles tax separately and can round each person's total up to a whole dollar."
 >
   <h1 class="mb-1 text-3xl font-bold text-slate-900 dark:text-slate-100">Tip Calculator</h1>
-  <p class="mb-6 text-sm text-slate-500 dark:text-slate-400">
-    Everything is calculated locally in your browser. Nothing is sent to our servers.
-  </p>
+  <PrivacyNote text="Runs entirely in your browser. No data is ever transmitted to our servers." />
 
   <div class="max-w-md">
     <TipCalculator client:load />
