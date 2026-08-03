@@ -11,4 +11,10 @@ export const tools: Tool[] = [
       'Generate strong, random passwords with configurable length and character sets.',
     href: '/password-generator',
   },
+  {
+    title: 'Tip Calculator',
+    description:
+      'Split the bill and calculate tip for any group size, with optional tax handling and rounding.',
+    href: '/tip-calculator',
+  },
 ];
