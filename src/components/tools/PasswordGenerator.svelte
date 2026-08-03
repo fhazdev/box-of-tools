@@ -1,10 +1,14 @@
 <script lang="ts">
   import { words } from '../../data/wordlist';
-
-  const LOWER = 'abcdefghijklmnopqrstuvwxyz';
-  const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const NUMBERS = '0123456789';
-  const SYMBOLS = '!@#$%^&*()-_=+[]{};:,.<>?/|~';
+  import {
+    SYMBOLS,
+    buildCharPool,
+    generatePassword,
+    generatePassphrase,
+    estimatePasswordBits,
+    estimatePassphraseBits,
+    strengthLabel,
+  } from '../../lib/password';
 
   type Mode = 'password' | 'passphrase';
   type Separator = '-' | '.' | '_' | ' ' | '';
@@ -29,42 +33,24 @@
   let copied = $state(false);
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
 
-  // Cryptographically secure integer in [0, max) via rejection sampling (no modulo bias)
-  function randInt(max: number): number {
-    const buf = new Uint32Array(1);
-    const limit = Math.floor(0xffffffff / max) * max;
-    do {
-      crypto.getRandomValues(buf);
-    } while (buf[0] >= limit);
-    return buf[0] % max;
-  }
-
-  function pool(): string {
-    return (
-      (useLower ? LOWER : '') +
-      (useUpper ? UPPER : '') +
-      (useNumbers ? NUMBERS : '') +
-      (useSymbols ? SYMBOLS : '')
-    );
-  }
-
   function generate() {
     if (mode === 'password') {
-      const chars = pool();
-      if (chars.length === 0) {
-        output = '';
-        return;
-      }
-      output = Array.from({ length }, () => chars[randInt(chars.length)]).join('');
-    } else {
-      const parts = Array.from({ length: wordCount }, () => {
-        const w = words[randInt(words.length)];
-        return capitalize ? w[0].toUpperCase() + w.slice(1) : w;
+      const pool = buildCharPool({
+        lower: useLower,
+        upper: useUpper,
+        numbers: useNumbers,
+        symbols: useSymbols,
       });
-      let phrase = parts.join(separator);
-      if (appendNumber) phrase += separator + randInt(100);
-      if (appendSymbol) phrase += separator + SYMBOLS[randInt(SYMBOLS.length)];
-      output = phrase;
+      output = generatePassword(length, pool);
+    } else {
+      output = generatePassphrase({
+        words,
+        wordCount,
+        separator,
+        capitalize,
+        appendNumber,
+        appendSymbol,
+      });
     }
   }
 
@@ -80,24 +66,34 @@
 
   const bits = $derived.by(() => {
     if (mode === 'password') {
-      const size = pool().length;
-      return size > 0 ? Math.floor(length * Math.log2(size)) : 0;
+      const poolSize = buildCharPool({
+        lower: useLower,
+        upper: useUpper,
+        numbers: useNumbers,
+        symbols: useSymbols,
+      }).length;
+      return estimatePasswordBits(length, poolSize);
     }
-    let b = wordCount * Math.log2(words.length);
-    if (appendNumber) b += Math.log2(100);
-    if (appendSymbol) b += Math.log2(SYMBOLS.length);
-    return Math.floor(b);
+    return estimatePassphraseBits({
+      wordCount,
+      wordlistSize: words.length,
+      appendNumber,
+      appendSymbol,
+      symbolsPoolSize: SYMBOLS.length,
+    });
   });
 
-  const strength = $derived(
-    bits >= 100
-      ? { label: 'Very Strong', bar: 'bg-green-600', text: 'text-green-700 dark:text-green-400' }
-      : bits >= 60
-        ? { label: 'Strong', bar: 'bg-lime-500', text: 'text-lime-600 dark:text-lime-400' }
-        : bits >= 45
-          ? { label: 'Fair', bar: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400' }
-          : { label: 'Weak', bar: 'bg-red-500', text: 'text-red-600 dark:text-red-400' }
-  );
+  const strengthMeta = {
+    'Very Strong': { bar: 'bg-green-600', text: 'text-green-700 dark:text-green-400' },
+    Strong: { bar: 'bg-lime-500', text: 'text-lime-600 dark:text-lime-400' },
+    Fair: { bar: 'bg-amber-500', text: 'text-amber-600 dark:text-amber-400' },
+    Weak: { bar: 'bg-red-500', text: 'text-red-600 dark:text-red-400' },
+  } as const;
+
+  const strength = $derived.by(() => {
+    const label = strengthLabel(bits);
+    return { label, ...strengthMeta[label] };
+  });
 
   const barWidth = $derived(Math.min(100, (bits / 128) * 100));
 

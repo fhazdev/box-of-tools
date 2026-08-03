@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { resolveTipPercent, calculateTip } from '../../lib/tip';
+
   const TIP_PRESETS = [10, 15, 18, 20, 25] as const;
 
   let billTotal = $state(0);
@@ -9,10 +11,6 @@
   let numPeople = $state(1);
   let roundUp = $state(false);
 
-  function safe(n: number): number {
-    return Number.isFinite(n) ? n : 0;
-  }
-
   function isPresetActive(preset: number): boolean {
     return customTip.trim() === '' && selectedPreset === preset;
   }
@@ -22,29 +20,24 @@
     customTip = '';
   }
 
-  const tipPercent = $derived.by(() => {
-    const custom = customTip.trim();
-    if (custom !== '') {
-      const n = Number(custom);
-      return Number.isFinite(n) ? Math.max(0, n) : 0;
-    }
-    return selectedPreset ?? 0;
-  });
+  const tipPercent = $derived(resolveTipPercent(customTip, selectedPreset));
 
   const tipPercentLabel = $derived(
     Number.isInteger(tipPercent) ? `${tipPercent}` : tipPercent.toFixed(1)
   );
 
-  const subtotal = $derived(safe(billTotal));
-  const taxAmt = $derived(addTaxSeparately ? safe(taxAmount) : 0);
-  const tipAmount = $derived(subtotal * (tipPercent / 100));
-  const total = $derived(subtotal + tipAmount + taxAmt);
+  const result = $derived.by(() =>
+    calculateTip({ billTotal, addTaxSeparately, taxAmount, tipPercent, numPeople, roundUp })
+  );
 
-  const peopleCount = $derived(Math.max(1, numPeople));
-  const perPersonSubtotal = $derived(subtotal / peopleCount);
-  const perPersonTip = $derived(tipAmount / peopleCount);
-  const perPersonTotalRaw = $derived(total / peopleCount);
-  const perPersonOwed = $derived(roundUp ? Math.ceil(perPersonTotalRaw) : perPersonTotalRaw);
+  const subtotal = $derived(result.subtotal);
+  const tipAmount = $derived(result.tipAmount);
+  const total = $derived(result.total);
+  const peopleCount = $derived(result.peopleCount);
+  const perPersonSubtotal = $derived(result.perPersonSubtotal);
+  const perPersonTip = $derived(result.perPersonTip);
+  const perPersonTotalRaw = $derived(result.perPersonTotalRaw);
+  const perPersonOwed = $derived(result.perPersonOwed);
 
   const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
   function fmt(n: number): string {

@@ -8,6 +8,8 @@ and SEO.
 
 - **[/password-generator](https://box-of-tools.com/password-generator)** — secure password
   & passphrase generator (Web Crypto API, nothing sent to a server)
+- **[/tip-calculator](https://box-of-tools.com/tip-calculator)** — split the bill and
+  calculate tip for any group size
 
 More tools are added as separate routes; each tool is registered in
 [`src/data/tools.ts`](src/data/tools.ts), which drives the homepage cards and nav.
@@ -28,6 +30,17 @@ npm install
 npm run dev       # dev server with hot reload at http://localhost:4321
 npm run build     # production build to dist/
 npm run preview   # serve the production build locally
+```
+
+## Testing
+
+Each tool's calculation logic lives in plain TypeScript modules under
+[`src/lib/`](src/lib/) (e.g. `password.ts`, `tip.ts`), separate from the Svelte
+components that render them, and is covered by unit tests with [Vitest](https://vitest.dev):
+
+```sh
+npm test         # run the test suite once
+npm run test:watch   # re-run on file changes
 ```
 
 ## Deployment
