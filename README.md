@@ -47,12 +47,34 @@ re-running `docker compose up` picks up source changes without an image rebuild.
 
 ## Deployment
 
-- **Infrastructure**: provisioned with Terraform — see [`infra/README.md`](infra/README.md)
-  for `init`/`plan`/`apply` instructions and how the deployment token is wired into
-  GitHub Actions.
-- **CI/CD**: pushes to `main` build and deploy via
-  [`.github/workflows/azure-static-web-apps.yml`](.github/workflows/azure-static-web-apps.yml);
-  pull requests get preview environments. Requires the `AZURE_STATIC_WEB_APPS_API_TOKEN`
-  repository secret (from the Terraform output).
-- **TODO**: custom domain setup (box-of-tools.com DNS + SWA custom domain), Google AdSense
-  integration.
+### Cloudflare Pages (current)
+
+Deploys via Cloudflare's Git integration — no GitHub Actions workflow needed for this
+path. Every push builds and deploys automatically; pull requests get preview URLs.
+
+**One-time setup (Cloudflare dashboard):**
+
+1. **Workers & Pages → Create → Pages → Connect to Git**, pick this repository.
+2. Framework preset: **Astro** (auto-detected). Build settings:
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+   - Node version: picked up automatically from [`.node-version`](.node-version) (22)
+3. Save and deploy. Cloudflare gives you a `*.pages.dev` URL immediately.
+4. **Custom domain**: Pages project → **Custom domains** → add `box-of-tools.com` and
+   follow the DNS instructions (trivial if the domain is already on Cloudflare DNS).
+
+Build settings are also pinned as code in [`wrangler.toml`](wrangler.toml)
+(`pages_build_output_dir`), so `npx wrangler pages deploy` works too if you ever want to
+deploy manually from your machine instead of relying on the Git integration.
+
+### Azure Static Web Apps (alternate / learning reference)
+
+Kept in the repo as a second, independent hosting path — see
+[`infra/README.md`](infra/README.md) for the Terraform (`init`/`plan`/`apply`) and how its
+deployment token feeds the `AZURE_STATIC_WEB_APPS_API_TOKEN` GitHub secret used by
+[`.github/workflows/azure-static-web-apps.yml`](.github/workflows/azure-static-web-apps.yml).
+The Docker/SWA-CLI setup above emulates this path locally.
+
+### TODO
+
+- Google AdSense integration.
