@@ -22,9 +22,3 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
-
-# terraform (terraform.tfvars.example stays tracked — it doesn't match *.tfvars)
-.terraform/
-*.tfstate
-*.tfstate.*
-*.tfvars

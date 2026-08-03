@@ -1,6 +1,0 @@
-# Copy to terraform.tfvars and adjust. terraform.tfvars is gitignored.
-
-location            = "eastus2"
-resource_group_name = "rg-box-of-tools"
-app_name            = "swa-box-of-tools"
-sku_tier            = "Free"
