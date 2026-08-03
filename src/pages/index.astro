@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
-import { tools } from '../data/tools';
+import { tools, CATEGORY_ORDER } from '../data/tools';
 ---
 
 <BaseLayout
@@ -16,10 +16,21 @@ import { tools } from '../data/tools';
     </p>
   </section>
 
-  <section>
-    <h2 class="sr-only">Tools</h2>
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {tools.map((tool) => <ToolCard tool={tool} />)}
-    </div>
-  </section>
+  {
+    CATEGORY_ORDER.map((category) => {
+      const categoryTools = tools.filter((tool) => tool.category === category);
+      if (categoryTools.length === 0) return null;
+
+      return (
+        <section class="mb-8">
+          <h2 class="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">{category}</h2>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {categoryTools.map((tool) => (
+              <ToolCard tool={tool} />
+            ))}
+          </div>
+        </section>
+      );
+    })
+  }
 </BaseLayout>
