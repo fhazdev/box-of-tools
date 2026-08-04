@@ -1,7 +1,9 @@
 ---
 import '../styles/global.css';
 import SEO from '../components/SEO.astro';
-import { tools } from '../data/tools';
+import { tools, CATEGORY_ORDER } from '../data/tools';
+
+const currentPath = Astro.url.pathname;
 
 interface Props {
   title: string;
@@ -47,30 +49,78 @@ const year = new Date().getFullYear();
           🧰 Box of Tools
         </a>
         <div class="flex items-center gap-4">
-          <nav>
-            <ul class="flex gap-4 text-sm">
-              <li>
-                <a
-                  href="/"
-                  class="text-slate-600 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
-                >
-                  Home
-                </a>
-              </li>
-              {
-                tools.map((tool) => (
-                  <li>
-                    <a
-                      href={tool.href}
-                      class="text-slate-600 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
-                    >
-                      {tool.title}
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </nav>
+          <div class="relative">
+            <button
+              id="tools-menu-button"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-controls="tools-menu"
+              class="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+                <path
+                  d="M4.25 2A2.25 2.25 0 0 0 2 4.25v2.5A2.25 2.25 0 0 0 4.25 9h2.5A2.25 2.25 0 0 0 9 6.75v-2.5A2.25 2.25 0 0 0 6.75 2h-2.5Zm9 0A2.25 2.25 0 0 0 11 4.25v2.5A2.25 2.25 0 0 0 13.25 9h2.5A2.25 2.25 0 0 0 18 6.75v-2.5A2.25 2.25 0 0 0 15.75 2h-2.5Zm-9 9A2.25 2.25 0 0 0 2 13.25v2.5A2.25 2.25 0 0 0 4.25 18h2.5A2.25 2.25 0 0 0 9 15.75v-2.5A2.25 2.25 0 0 0 6.75 11h-2.5Zm9 0A2.25 2.25 0 0 0 11 13.25v2.5A2.25 2.25 0 0 0 13.25 18h2.5A2.25 2.25 0 0 0 18 15.75v-2.5A2.25 2.25 0 0 0 15.75 11h-2.5Z"
+                ></path>
+              </svg>
+              All Tools
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+                <path
+                  fill-rule="evenodd"
+                  d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </button>
+            <div
+              id="tools-menu"
+              role="menu"
+              class="hidden absolute right-0 top-full z-20 mt-2 w-[min(90vw,40rem)] rounded-lg border border-slate-200 bg-white p-5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+            >
+              <a
+                href="/"
+                class={`mb-4 inline-block text-sm font-semibold ${
+                  currentPath === '/'
+                    ? 'text-blue-700 dark:text-blue-400'
+                    : 'text-slate-900 hover:text-blue-700 dark:text-slate-100 dark:hover:text-blue-400'
+                }`}
+              >
+                Home
+              </a>
+              <div class="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+                {
+                  CATEGORY_ORDER.map((category) => {
+                    const categoryTools = tools.filter((tool) => tool.category === category);
+                    if (categoryTools.length === 0) return null;
+
+                    return (
+                      <div>
+                        <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                          {category}
+                        </p>
+                        <ul class="space-y-1.5">
+                          {categoryTools.map((tool) => (
+                            <li>
+                              <a
+                                href={tool.href}
+                                class={
+                                  currentPath === tool.href
+                                    ? 'text-sm font-medium text-blue-700 dark:text-blue-400'
+                                    : 'text-sm text-slate-600 hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400'
+                                }
+                              >
+                                {tool.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })
+                }
+              </div>
+            </div>
+          </div>
           <button
             id="theme-toggle"
             type="button"
@@ -118,6 +168,36 @@ const year = new Date().getFullYear();
       document.getElementById('theme-toggle')?.addEventListener('click', () => {
         const isDark = document.documentElement.classList.toggle('dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      });
+    </script>
+
+    <script is:inline>
+      const toolsMenuButton = document.getElementById('tools-menu-button');
+      const toolsMenu = document.getElementById('tools-menu');
+
+      function closeToolsMenu() {
+        toolsMenu?.classList.add('hidden');
+        toolsMenuButton?.setAttribute('aria-expanded', 'false');
+      }
+
+      toolsMenuButton?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const isOpen = !toolsMenu?.classList.contains('hidden');
+        toolsMenu?.classList.toggle('hidden');
+        toolsMenuButton.setAttribute('aria-expanded', String(!isOpen));
+      });
+
+      document.addEventListener('click', (event) => {
+        if (toolsMenu && !toolsMenu.classList.contains('hidden') && !toolsMenu.contains(event.target) && event.target !== toolsMenuButton) {
+          closeToolsMenu();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !toolsMenu?.classList.contains('hidden')) {
+          closeToolsMenu();
+          toolsMenuButton?.focus();
+        }
       });
     </script>
   </body>
