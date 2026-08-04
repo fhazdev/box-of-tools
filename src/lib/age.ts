@@ -30,6 +30,10 @@ function addMonths(date: Date, months: number): Date {
   return new Date(date.getFullYear(), date.getMonth() + months, date.getDate());
 }
 
+export function isLeapYear(year: number): boolean {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+
 export interface AgeBreakdown {
   years: number;
   months: number;
@@ -83,12 +87,28 @@ export interface NextBirthday {
   isToday: boolean;
 }
 
-/** The next occurrence of `dob`'s month/day on or after `asOf`. */
+/**
+ * The next occurrence of `dob`'s month/day on or after `asOf`.
+ *
+ * For a Feb 29 birth date, JS Date would silently roll the anniversary
+ * forward to Mar 1 in non-leap years. Instead this follows the common
+ * civil-registration convention of anchoring the anniversary to Feb 28
+ * in non-leap years, landing back on Feb 29 itself in leap years.
+ */
 export function nextBirthday(dob: Date, asOf: Date): NextBirthday {
   const from = startOfDay(asOf);
-  let date = new Date(from.getFullYear(), dob.getMonth(), dob.getDate());
+  const isLeapDayBirthday = dob.getMonth() === 1 && dob.getDate() === 29;
+
+  function anniversaryInYear(year: number): Date {
+    if (isLeapDayBirthday && !isLeapYear(year)) {
+      return new Date(year, 1, 28);
+    }
+    return new Date(year, dob.getMonth(), dob.getDate());
+  }
+
+  let date = anniversaryInYear(from.getFullYear());
   if (date.getTime() < from.getTime()) {
-    date = new Date(from.getFullYear() + 1, dob.getMonth(), dob.getDate());
+    date = anniversaryInYear(from.getFullYear() + 1);
   }
 
   const daysUntil = Math.round((date.getTime() - from.getTime()) / MS_PER_DAY);

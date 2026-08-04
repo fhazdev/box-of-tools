@@ -2,6 +2,60 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AgeCalculator from '../components/tools/AgeCalculator.svelte';
 import PrivacyNote from '../components/PrivacyNote.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+
+const faqItems = [
+  {
+    question: 'How accurate is this age calculator?',
+    answer:
+      "It works entirely from real calendar dates — years, months, and days are counted using the actual Gregorian calendar rather than a flat 365-day or 30-day-month approximation, and leap years (including the century-year exception) are handled automatically. That's accurate enough for medical, legal, or other official use, though for anything you're about to sign, it's worth double-checking the result against your own records.",
+  },
+  {
+    question: 'Why does my age in months differ from other calculators?',
+    answer:
+      'Different tools count months differently. This one walks forward from the date of birth in whole calendar months — so "one month" means the real length of that month, whether it\'s 28, 29, 30, or 31 days — then counts whatever\'s left over in days. Tools that assume every month is a flat 30 days will land on a different number, especially for date ranges that cross February.',
+  },
+  {
+    question: "Can I find my age on a past or future date, not just today?",
+    answer:
+      "Yes — use the At Date tab. Enter a date of birth and any reference date, past or future, and it calculates age as of that specific day instead of today. Handy for checking an age threshold ahead of time, like an insurance application, a legal deadline, or a school cutoff date.",
+  },
+  {
+    question: 'Can I work backwards and find a date of birth from an age?',
+    answer:
+      "Yes — that's the DOB Finder tab. Enter an age in years, months, and days and it subtracts that from today's date to tell you the date of birth it corresponds to.",
+  },
+  {
+    question: 'Can I compare the ages of two people?',
+    answer:
+      "Yes — the Age Difference tab computes the exact calendar gap between two people's dates of birth, in either order, and tells you who's older.",
+  },
+  {
+    question: 'How does the calculator handle February 29 birthdays?',
+    answer:
+      "Someone born on Feb 29 only has a 'real' birthday once every four years. In the years between, the next-birthday countdown treats Feb 28 as the anniversary — the common civil-registration convention — and lands back on Feb 29 itself whenever the current year actually is a leap year.",
+  },
+  {
+    question: 'What do Total Days, Total Weeks, and Total Months mean?',
+    answer:
+      "They're the same date range expressed in different units, shown alongside the years/months/days headline on the Age Today and At Date tabs. Total Days and Total Weeks are a straight count of elapsed calendar days (weeks is just that divided by 7); Total Months is the whole-month count the years/months/days breakdown is built from.",
+  },
+  {
+    question: 'Is this calculator free, and does it store my dates anywhere?',
+    answer:
+      "Yes, it's free with no sign-up, and it runs entirely in your browser — the dates you enter are never sent to a server or stored anywhere. Refreshing or closing the page clears them.",
+  },
+  {
+    question: 'Why is Korean age sometimes different from someone’s international age?',
+    answer:
+      'Korea traditionally used a different way of counting age (Sae-neun-nai): a newborn starts at age 1 instead of 0, to account for the pregnancy, and everyone gains a year on January 1st rather than on their own birthday — so a baby born December 30 could turn "2" just two days after birth. South Korea officially adopted the international system for legal purposes in June 2023, though the traditional count still shows up informally. This calculator uses the standard international method throughout.',
+  },
+  {
+    question: "What's the formula for calculating age by hand?",
+    answer:
+      'In complete years: current year minus birth year, minus one more if this year\'s birthday hasn\'t happened yet. For the leftover months and days, count forward from the birth date in whole calendar months without passing the target date, then whatever remains is counted in days. In a spreadsheet, the same numbers come from =DATEDIF(dob, today, "y") for years, with "ym" and "md" for the remaining months and days.',
+  },
+];
 ---
 
 <BaseLayout
@@ -11,6 +65,11 @@ import PrivacyNote from '../components/PrivacyNote.astro';
   <h1 class="mb-1 text-3xl font-bold text-slate-900 dark:text-slate-100">
     Age Calculator — Find Your Exact Age in Years, Months, Days
   </h1>
+  <p class="mb-4 max-w-2xl text-slate-600 dark:text-slate-400">
+    Work out your exact age — in years, months, and days — from any date of birth, either as of
+    today or any other date you choose. It can also work backwards from an age to a date of
+    birth, or compare two people's ages directly.
+  </p>
   <PrivacyNote text="Runs entirely in your browser. No data is ever transmitted to our servers." />
 
   <div class="max-w-2xl">
@@ -18,20 +77,150 @@ import PrivacyNote from '../components/PrivacyNote.astro';
   </div>
 
   <section class="mt-10 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">About this tool</h2>
-    <p class="mb-2">
-      <strong>Age Today</strong> and <strong>At Date</strong> give a calendar-accurate years/months/days
-      breakdown between a date of birth and today (or any reference date you choose), plus the total
-      number of days, weeks, and months, and a countdown to the next birthday.
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      What is chronological age?
+    </h2>
+    <p class="mb-6">
+      Chronological age is simply the length of time that has passed between a date of birth and
+      a reference date — today, in most cases — expressed in years, months, and days on the
+      ordinary Gregorian calendar. It's the number that appears on virtually every official form:
+      medical records, school enrollment, retirement paperwork, legal documents. It's distinct
+      from <em>biological age</em>, covered further down, which measures how a body is actually
+      aging rather than how long it's existed.
     </p>
-    <p class="mb-2">
-      <strong>DOB Finder</strong> works backwards from an age to the date of birth it corresponds to
-      today. <strong>Age Difference</strong> finds the exact gap between two people's birth dates,
-      regardless of which one you enter first.
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      How this calculator works
+    </h2>
+    <p class="mb-6">
+      <strong>Age Today</strong> and <strong>At Date</strong> subtract a date of birth from a reference
+      date (today, or one you pick) using real calendar arithmetic — walking forward from the birth
+      date in whole months without overshooting the target date, then counting whatever's left in
+      days. That avoids the small errors a flat "30-day month" or "365-day year" approximation
+      introduces, especially across February and leap years. Alongside the headline years/months/days
+      figure, you'll see the same span as total days, total weeks, and total months, plus a countdown
+      to the next birthday. <strong>DOB Finder</strong> runs the same arithmetic backwards, and <strong>Age
+      Difference</strong> applies it to two people's birth dates instead of one birth date and today.
     </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      How to calculate age from a date of birth
+    </h2>
+    <p class="mb-2">
+      The short version: age in complete years is the current year minus the birth year, minus
+      one more if this year's birthday hasn't happened yet. For example, someone born May 15,
+      1990, measured against April 14, 2026: 2026 − 1990 = 36, but their May birthday hasn't
+      arrived yet this year, so they're 35.
+    </p>
+    <p class="mb-6">
+      For the exact months and days, count forward from the last birthday — May 15, 2025, in this
+      case — to the reference date. May 15, 2025 to April 14, 2026 is 10 full months and 30 more
+      days, so the final answer is <strong>35 years, 10 months, 30 days</strong>.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      Calculating age by hand, step by step
+    </h2>
+    <ol class="mb-2 list-decimal space-y-1 pl-5">
+      <li>Write both dates as Year-Month-Day.</li>
+      <li>Subtract the birth year from the current year.</li>
+      <li>If this year's birthday hasn't happened yet, subtract 1 from that.</li>
+      <li>
+        For the months: current month minus birth month. If negative, add 12 and subtract one
+        more year from your running total.
+      </li>
+      <li>
+        For the days: current day minus birth day. If negative, borrow from the previous month
+        using its actual length (28, 29, 30, or 31 days) — not a flat 30.
+      </li>
+    </ol>
+    <p class="mb-6">
+      Worked example: born March 14, 1979, measured against April 15, 2026. Years: 2026 − 1979 =
+      47, and the birthday (March 14) has already passed this year, so it stays at 47. Months:
+      April (4) − March (3) = 1. Days: 15 − 14 = 1. Final age: <strong>47 years, 1 month, 1 day</strong>.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      How leap years and Feb 29 birthdays are handled
+    </h2>
+    <p class="mb-2">
+      Because this calculator counts in real calendar months rather than a fixed 365-day year,
+      leap years take care of themselves in the years/months/days breakdown — a leap day is just
+      one more day in February. The one genuine edge case is someone born on Feb 29 itself: in
+      the three years out of four when Feb 29 doesn't exist, the next-birthday countdown lands on
+      Feb 28 instead, then returns to Feb 29 the next time the calendar actually has one.
+    </p>
+    <p class="mb-6">
+      The leap year rule, for reference: a year is a leap year if it's divisible by 4 — except
+      century years (divisible by 100), which are only leap years if also divisible by 400. So
+      2000 was a leap year, 2100 won't be, and 2400 will be.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      How age is counted in other parts of the world
+    </h2>
+    <p class="mb-6">
+      Not every culture counts age the way most of the Western world does — starting at 0 at
+      birth and adding a year on each birthday. Traditional Korean age (Sae-neun-nai) starts a
+      newborn at age 1, to account for the pregnancy, and adds a year to everyone on January 1st
+      rather than on individual birthdays, so a baby born December 30 turns "2" just two days
+      later. South Korea officially adopted the international system for legal purposes in June
+      2023, though the traditional count still shows up informally. Some East Asian traditions
+      instead increment age at the Lunar New Year rather than a fixed date. This calculator uses
+      the standard international (Western) method throughout.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      When you need an exact age, not an approximation
+    </h2>
+    <p class="mb-2">
+      A rough "about 35 years old" is fine for casual conversation, but plenty of real situations
+      hinge on the exact day:
+    </p>
+    <ul class="mb-6 list-disc space-y-1 pl-5">
+      <li>
+        <strong>Medical dosing</strong> — pediatric drug dosing is often calculated by age in days
+        or months rather than years.
+      </li>
+      <li>
+        <strong>Retirement and benefits</strong> — in the US, Social Security's full retirement
+        age depends on birth year down to the month, and IRA withdrawals become penalty-free at
+        exactly 59½.
+      </li>
+      <li>
+        <strong>Legal documents</strong> — wills, trusts, and beneficiary clauses are often
+        written around specific age thresholds.
+      </li>
+      <li>
+        <strong>School enrollment</strong> — many school districts use a hard cutoff date
+        (commonly September 1st) to decide which grade a child starts in.
+      </li>
+      <li>
+        <strong>Insurance</strong> — premiums are frequently priced in age brackets that change on
+        the exact anniversary of a birth date.
+      </li>
+      <li>
+        <strong>Genealogy</strong> — working out a lifespan or an age at a historical event from
+        old records.
+      </li>
+    </ul>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      Chronological age vs. biological age
+    </h2>
     <p>
-      Ages are calculated using calendar months and days rather than a flat 365-day year, so results
-      stay accurate across leap years and months of different lengths.
+      Chronological age is just elapsed calendar time — it's what this calculator computes, and
+      it's the only version that appears on official documents. Biological age is a different
+      idea entirely: an estimate of how "old" a body actually is, based on things like
+      cardiovascular fitness, inflammation markers, or cellular changes such as telomere length.
+      Two people can share the same chronological age and have meaningfully different biological
+      ages depending on health and lifestyle — but biological age has no legal standing, and it
+      isn't something this (or any) date-based calculator can measure; it requires actual clinical
+      testing.
     </p>
+  </section>
+
+  <section class="mt-10 max-w-2xl">
+    <FaqAccordion title="Frequently Asked Questions" items={faqItems} />
   </section>
 </BaseLayout>

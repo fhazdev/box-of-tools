@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseDateInput, ageBetween, nextBirthday, reverseEngineerDOB } from './age';
+import { parseDateInput, ageBetween, nextBirthday, reverseEngineerDOB, isLeapYear } from './age';
 
 describe('parseDateInput', () => {
   it('parses a valid YYYY-MM-DD string as a local date', () => {
@@ -103,6 +103,43 @@ describe('nextBirthday', () => {
     const result = nextBirthday(dob, asOf);
     expect(result.isToday).toBe(true);
     expect(result.daysUntil).toBe(0);
+  });
+
+  it('anchors a Feb 29 birthday to Feb 28 in a non-leap year', () => {
+    const dob = new Date(2000, 1, 29); // Feb 29, 2000 (leap year)
+    const asOf = new Date(2025, 0, 1); // Jan 1, 2025 (non-leap year)
+    const result = nextBirthday(dob, asOf);
+    expect(result.date.getFullYear()).toBe(2025);
+    expect(result.date.getMonth()).toBe(1); // February
+    expect(result.date.getDate()).toBe(28);
+  });
+
+  it('lands back on Feb 29 itself when the anniversary year is a leap year', () => {
+    const dob = new Date(2000, 1, 29);
+    // Feb 28, 2027 has already passed; 2028 is the next leap year.
+    const asOf = new Date(2027, 2, 1); // Mar 1, 2027
+    const result = nextBirthday(dob, asOf);
+    expect(result.date.getFullYear()).toBe(2028);
+    expect(result.date.getMonth()).toBe(1);
+    expect(result.date.getDate()).toBe(29);
+  });
+
+  it('flags Feb 28 as today for a Feb 29 birthday in a non-leap year', () => {
+    const dob = new Date(2000, 1, 29);
+    const asOf = new Date(2025, 1, 28);
+    const result = nextBirthday(dob, asOf);
+    expect(result.isToday).toBe(true);
+    expect(result.daysUntil).toBe(0);
+  });
+});
+
+describe('isLeapYear', () => {
+  it('treats years divisible by 4 as leap, except century years', () => {
+    expect(isLeapYear(2000)).toBe(true);
+    expect(isLeapYear(2024)).toBe(true);
+    expect(isLeapYear(2100)).toBe(false); // divisible by 100, not 400
+    expect(isLeapYear(2400)).toBe(true); // divisible by 400
+    expect(isLeapYear(2025)).toBe(false);
   });
 });
 
