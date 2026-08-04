@@ -1,6 +1,5 @@
-export function safe(n: number): number {
-  return Number.isFinite(n) ? n : 0;
-}
+export { safe } from './number';
+import { safe } from './number';
 
 export function resolveTipPercent(customTip: string, selectedPreset: number | null): number {
   const custom = customTip.trim();

@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MortgageCalculator from '../components/tools/MortgageCalculator.svelte';
+import PrivacyNote from '../components/PrivacyNote.astro';
+---
+
+<BaseLayout
+  title="Mortgage Calculator"
+  description="Estimate your monthly mortgage payment, see a breakdown of principal, interest, tax, insurance, PMI, and HOA fees, and view a yearly amortization schedule."
+>
+  <h1 class="mb-1 text-3xl font-bold text-slate-900 dark:text-slate-100">Mortgage Calculator</h1>
+  <PrivacyNote text="Runs entirely in your browser. No data is ever transmitted to our servers." />
+
+  <div class="max-w-2xl">
+    <MortgageCalculator client:load />
+  </div>
+
+  <section class="mt-10 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">About this tool</h2>
+    <p class="mb-2">
+      Principal & interest is calculated with the standard amortization formula: <code>M = P × [r(1+r)ⁿ] / [(1+r)ⁿ − 1]</code>, where <code>P</code> is the loan amount, <code>r</code> is the monthly interest rate, and <code>n</code> is the number of monthly payments. Property tax, homeowner's insurance, PMI, and HOA fees are optional and added on top as flat monthly amounts.
+    </p>
+    <p>
+      The Amortization tab shows how much of each year's payments goes toward principal versus
+      interest, and your remaining loan balance. Early payments are mostly interest, and that
+      shifts toward principal as the loan matures.
+    </p>
+  </section>
+</BaseLayout>

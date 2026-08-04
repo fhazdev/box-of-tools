@@ -26,4 +26,11 @@ export const tools: Tool[] = [
     href: '/tip-calculator',
     category: 'Financial',
   },
+  {
+    title: 'Mortgage Calculator',
+    description:
+      'Estimate your monthly mortgage payment, see a cost breakdown, and view a yearly amortization schedule.',
+    href: '/mortgage-calculator',
+    category: 'Financial',
+  },
 ];
