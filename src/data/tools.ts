@@ -1,8 +1,8 @@
-export type Category = 'Technology' | 'Financial';
+export type Category = 'Technology' | 'Financial' | 'Date & Time';
 
 // Controls display order on the homepage — not alphabetical, so new
 // categories can be inserted wherever makes sense.
-export const CATEGORY_ORDER: Category[] = ['Technology', 'Financial'];
+export const CATEGORY_ORDER: Category[] = ['Financial', 'Technology', 'Date & Time'];
 
 export interface Tool {
   title: string;
@@ -32,5 +32,12 @@ export const tools: Tool[] = [
       'Estimate your monthly mortgage payment, see a cost breakdown, and view a yearly amortization schedule.',
     href: '/mortgage-calculator',
     category: 'Financial',
+  },
+  {
+    title: 'Age Calculator',
+    description:
+      'Find your exact age in years, months, and days, calculate age at a date, reverse-engineer a date of birth, or find the age gap between two people.',
+    href: '/age-calculator',
+    category: 'Date & Time',
   },
 ];

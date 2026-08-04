@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AgeCalculator from '../components/tools/AgeCalculator.svelte';
+import PrivacyNote from '../components/PrivacyNote.astro';
+---
+
+<BaseLayout
+  title="Age Calculator"
+  description="Find your exact age in years, months, and days, calculate age at a specific date, reverse-engineer a date of birth, or find the age gap between two people."
+>
+  <h1 class="mb-1 text-3xl font-bold text-slate-900 dark:text-slate-100">
+    Age Calculator — Find Your Exact Age in Years, Months, Days
+  </h1>
+  <PrivacyNote text="Runs entirely in your browser. No data is ever transmitted to our servers." />
+
+  <div class="max-w-2xl">
+    <AgeCalculator client:load />
+  </div>
+
+  <section class="mt-10 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">About this tool</h2>
+    <p class="mb-2">
+      <strong>Age Today</strong> and <strong>At Date</strong> give a calendar-accurate years/months/days
+      breakdown between a date of birth and today (or any reference date you choose), plus the total
+      number of days, weeks, and months, and a countdown to the next birthday.
+    </p>
+    <p class="mb-2">
+      <strong>DOB Finder</strong> works backwards from an age to the date of birth it corresponds to
+      today. <strong>Age Difference</strong> finds the exact gap between two people's birth dates,
+      regardless of which one you enter first.
+    </p>
+    <p>
+      Ages are calculated using calendar months and days rather than a flat 365-day year, so results
+      stay accurate across leap years and months of different lengths.
+    </p>
+  </section>
+</BaseLayout>
