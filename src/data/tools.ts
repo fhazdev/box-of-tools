@@ -34,6 +34,13 @@ export const tools: Tool[] = [
     category: 'Financial',
   },
   {
+    title: 'Loan Calculator',
+    description:
+      'Estimate the monthly payment, total interest, and payoff date for a mortgage, auto, or personal loan, with optional extra payments and fees.',
+    href: '/loan-calculator',
+    category: 'Financial',
+  },
+  {
     title: 'Age Calculator',
     description:
       'Find your exact age in years, months, and days, calculate age at a date, reverse-engineer a date of birth, or find the age gap between two people.',

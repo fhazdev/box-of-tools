@@ -1,21 +1,14 @@
 import { safe } from './number';
-
-export function calculateMonthlyPI(
-  principal: number,
-  annualRatePercent: number,
-  termYears: number
-): number {
-  const p = safe(principal);
-  const years = safe(termYears);
-  if (p <= 0 || years <= 0) return 0;
-
-  const monthlyRate = safe(annualRatePercent) / 100 / 12;
-  const numPayments = Math.round(years * 12);
-  if (monthlyRate === 0) return p / numPayments;
-
-  const factor = Math.pow(1 + monthlyRate, numPayments);
-  return (p * (monthlyRate * factor)) / (factor - 1);
-}
+// The month-by-month amortization simulation is loan-agnostic, so it lives
+// in loan.ts and is reused here rather than duplicated.
+export {
+  calculateMonthlyPI,
+  buildMonthlyAmortizationSchedule,
+  groupAmortizationByYear,
+  type AmortizationMonthRow,
+  type AmortizationYearGroup,
+} from './loan';
+import { calculateMonthlyPI } from './loan';
 
 export function downPaymentPercentFromAmount(homePrice: number, amount: number): number {
   const price = safe(homePrice);
@@ -74,92 +67,4 @@ export function calculateMortgage(input: MortgageInput): MortgageResult {
   const totalMonthlyPayment = breakdown.reduce((sum, item) => sum + item.value, 0);
 
   return { loanAmount, monthlyPI, totalMonthlyPayment, breakdown };
-}
-
-export interface AmortizationMonthRow {
-  monthIndex: number; // 1-based payment number over the life of the loan
-  year: number; // calendar year of this payment, for grouping
-  date: Date; // first of the calendar month this payment is due
-  principalPaid: number;
-  interestPaid: number;
-  totalPayment: number;
-  endingBalance: number;
-}
-
-// Simulates the loan month by month — interest accrues on the remaining
-// balance, which changes every payment, so this can't be computed from
-// yearly totals alone. Payments are assumed to start the month after
-// `startDate` (the standard mortgage convention), defaulting to today.
-export function buildMonthlyAmortizationSchedule(
-  principal: number,
-  annualRatePercent: number,
-  termYears: number,
-  startDate: Date = new Date()
-): AmortizationMonthRow[] {
-  const p = safe(principal);
-  const years = safe(termYears);
-  if (p <= 0 || years <= 0) return [];
-
-  const monthlyRate = safe(annualRatePercent) / 100 / 12;
-  const totalMonths = Math.round(years * 12);
-  const payment = calculateMonthlyPI(p, annualRatePercent, years);
-
-  const rows: AmortizationMonthRow[] = [];
-  let balance = p;
-
-  for (let i = 1; i <= totalMonths; i++) {
-    const interestPortion = balance * monthlyRate;
-    let principalPortion = payment - interestPortion;
-    // Guard against floating-point overshoot on the final payment
-    if (principalPortion > balance) principalPortion = balance;
-    if (principalPortion < 0) principalPortion = 0;
-
-    balance -= principalPortion;
-
-    // Date constructor normalizes month overflow (e.g. month 13 → next Jan),
-    // so this rolls over calendar years correctly without extra bookkeeping.
-    const date = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
-
-    rows.push({
-      monthIndex: i,
-      year: date.getFullYear(),
-      date,
-      principalPaid: principalPortion,
-      interestPaid: interestPortion,
-      totalPayment: principalPortion + interestPortion,
-      endingBalance: Math.max(0, balance),
-    });
-  }
-
-  return rows;
-}
-
-export interface AmortizationYearGroup {
-  year: number;
-  principalPaid: number;
-  interestPaid: number;
-  totalPayment: number;
-  endingBalance: number;
-  months: AmortizationMonthRow[];
-}
-
-export function groupAmortizationByYear(months: AmortizationMonthRow[]): AmortizationYearGroup[] {
-  const groups: AmortizationYearGroup[] = [];
-  const byYear = new Map<number, AmortizationYearGroup>();
-
-  for (const month of months) {
-    let group = byYear.get(month.year);
-    if (!group) {
-      group = { year: month.year, principalPaid: 0, interestPaid: 0, totalPayment: 0, endingBalance: 0, months: [] };
-      byYear.set(month.year, group);
-      groups.push(group);
-    }
-    group.principalPaid += month.principalPaid;
-    group.interestPaid += month.interestPaid;
-    group.totalPayment += month.totalPayment;
-    group.endingBalance = month.endingBalance;
-    group.months.push(month);
-  }
-
-  return groups;
 }

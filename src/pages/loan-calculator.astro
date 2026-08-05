@@ -1,0 +1,142 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LoanCalculator from '../components/tools/LoanCalculator.svelte';
+import PrivacyNote from '../components/PrivacyNote.astro';
+---
+
+<BaseLayout
+  title="Loan Calculator"
+  description="Estimate the monthly payment, total interest, and payoff date for a mortgage, auto, or personal loan, with optional extra payments, fees, and a full amortization schedule."
+>
+  <h1 class="mb-1 text-3xl font-bold text-slate-900 dark:text-slate-100">Loan Calculator</h1>
+  <p class="mb-4 max-w-2xl text-slate-600 dark:text-slate-400">
+    Estimate the monthly payment, total interest, and total cost for any fixed-rate installment
+    loan, whether it is a mortgage, auto loan, or personal loan, and see how extra payments or fees change the
+    numbers.
+  </p>
+  <PrivacyNote text="Runs entirely in your browser. No data is ever transmitted to our servers." />
+
+  <div class="max-w-3xl">
+    <LoanCalculator client:load />
+  </div>
+
+  <section class="mt-10 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      How to use this calculator
+    </h2>
+    <p class="mb-2">
+      By entering a few pieces of information, this calculator can give you a quick read on the
+      monthly payment for most fixed-rate installment loans, including:
+    </p>
+    <ul class="mb-2 list-disc space-y-1 pl-5">
+      <li>Mortgages</li>
+      <li>Auto loans</li>
+      <li>Personal loans</li>
+    </ul>
+    <p class="mb-6">
+      <strong>Keep in mind:</strong> the best rates go to borrowers with the highest credit scores.
+      Make sure the rate you enter is in line with your current credit, not just an advertised
+      "starting at" rate.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">Loan amount</h2>
+    <p class="mb-2">Fine-tuning the loan amount can help you answer questions like:</p>
+    <ul class="mb-6 list-disc space-y-1 pl-5">
+      <li>
+        How much a mortgage refinance payment changes depending on whether you roll closing costs
+        into the loan or pay them separately.
+      </li>
+      <li>How much an extra $1,000 adds to the payment on a short-term personal loan.</li>
+      <li>
+        What the maximum loan amount — and sale price — should be before you start negotiating at
+        a car dealership.
+      </li>
+    </ul>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      Loan term, in months or years
+    </h2>
+    <p class="mb-2">
+      Whether debt freedom or a lower monthly payment matters more to you, the term you pick makes
+      a real difference:
+    </p>
+    <ul class="mb-2 list-disc space-y-1 pl-5">
+      <li>A shorter mortgage term means paying off the balance faster to own the home outright sooner.</li>
+      <li>
+        A longer auto loan term lowers the payment if you're saving up for something else, like a
+        wedding or tuition.
+      </li>
+      <li>
+        The right debt consolidation term clears out credit card balances without blowing up your
+        monthly budget.
+      </li>
+    </ul>
+    <p class="mb-6">
+      Enter the term as whichever unit is more natural — months or years — using the toggle next to
+      the term field; the calculator converts between them automatically. Most lenders won't offer
+      an installment loan shorter than one year.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      Interest rate, per year
+    </h2>
+    <p class="mb-2">
+      Look up current rates for your loan type and credit profile before entering a number here —
+      rates vary a lot by lender, loan type, and credit score. For example, an excellent-credit
+      borrower might qualify for well under 8% on a three-year personal loan, while a fair-credit
+      borrower could see a rate closer to 20% for the same term.
+    </p>
+    <p class="mb-6">
+      Lenders also tend to charge higher rates for longer repayment terms, which compounds with the
+      extra time to increase total interest paid.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">Total interest paid</h2>
+    <p class="mb-6">
+      This is where you see the real cost of borrowing, based on the amount, rate, and term you
+      entered. The sooner a loan is paid off and the lower its rate, the less interest accrues over
+      its life — which is exactly what extra payments (below) are designed to reduce.
+    </p>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+      Amortization schedule
+    </h2>
+    <p class="mb-2">
+      Click "Show amortization schedule" to see the nuts and bolts of the loan, year by year and
+      month by month. A couple of things worth noticing:
+    </p>
+    <ul class="mb-2 list-disc space-y-1 pl-5">
+      <li>Early payments are mostly interest; later payments are mostly principal.</li>
+      <li>
+        The payoff date shown in the summary is useful on its own — handy if you're budgeting
+        around a major purchase and need to know when a loan will be out of the picture.
+      </li>
+    </ul>
+
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">Add extra payments</h2>
+    <p class="mb-2">
+      If you already have a loan and want to pay it off faster, open "Optional: extra payments and
+      fees" and experiment with an extra:
+    </p>
+    <ul class="mb-2 list-disc space-y-1 pl-5">
+      <li><strong>Monthly</strong> payment, added on top of every regular payment.</li>
+      <li><strong>Yearly</strong> payment, added once every 12 payments.</li>
+      <li>
+        <strong>One-time</strong> payment on a specific date — pick a date and the calculator applies
+        it in that calendar month only.
+      </li>
+    </ul>
+    <p class="mb-2">
+      Open the amortization schedule afterward to see exactly how it shifted the payoff date and
+      remaining balance. A few situations where this is worth trying:
+    </p>
+    <ul class="list-disc space-y-1 pl-5">
+      <li>You got a raise and can comfortably afford to pay more every month.</li>
+      <li>You want to apply a tax refund to the loan every year to clear it faster.</li>
+      <li>
+        You received a windfall — an inheritance, a bonus — and want to see what putting a chunk of
+        it toward a large balance, like a mortgage, would do to the payoff date.
+      </li>
+    </ul>
+  </section>
+</BaseLayout>
