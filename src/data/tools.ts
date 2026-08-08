@@ -41,6 +41,13 @@ export const tools: Tool[] = [
     category: 'Financial',
   },
   {
+    title: 'Stock Calculator',
+    description:
+      'Figure out what a hypothetical investment in a U.S. stock or ETF would be worth today, with or without reinvested dividends.',
+    href: '/stock-calculator',
+    category: 'Financial',
+  },
+  {
     title: 'Age Calculator',
     description:
       'Find your exact age in years, months, and days, calculate age at a date, reverse-engineer a date of birth, or find the age gap between two people.',

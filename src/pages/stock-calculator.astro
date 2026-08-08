@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StockCalculator from '../components/tools/StockCalculator.svelte';
+import PrivacyNote from '../components/PrivacyNote.astro';
+---
+
+<BaseLayout
+  title="Stock Calculator"
+  description="Figure out what a hypothetical investment in a U.S. stock or ETF would be worth today, with or without reinvested dividends."
+>
+  <h1 class="mb-1 text-3xl font-bold text-slate-900 dark:text-slate-100">Stock Calculator</h1>
+  <p class="mb-4 max-w-2xl text-slate-600 dark:text-slate-400">
+    Pick a stock, a purchase date, and an amount to see what that hypothetical investment would be
+    worth today — with the option to include or exclude reinvested dividends.
+  </p>
+  <PrivacyNote text="Your ticker, date, and amount are sent to our server to look up the historical price — nothing is stored." />
+
+  <div class="max-w-xl">
+    <StockCalculator client:load />
+  </div>
+
+  <section class="mt-10 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+    <h2 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">About this tool</h2>
+    <p class="mb-2">
+      Prices come from daily historical market data. If your purchase date falls on a weekend or
+      market holiday, the calculator uses the next trading day instead.
+    </p>
+    <p class="mb-2">
+      With <strong>reinvested dividends on</strong>, the result reflects total return — as if every
+      dividend paid along the way was used to buy more shares on its payment date. This is the more
+      realistic number for most long-term comparisons, especially for dividend-paying stocks and
+      broad-market ETFs.
+    </p>
+    <p>
+      With it <strong>off</strong>, the result reflects price appreciation only (still correctly
+      adjusted for any stock splits), and any dividends that would have been paid are shown
+      separately for reference rather than added to the total.
+    </p>
+  </section>
+</BaseLayout>
