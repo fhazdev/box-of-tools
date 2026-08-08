@@ -104,6 +104,40 @@ describe('GET /api/stock-return', () => {
     expect(res.status).toBe(502);
   });
 
+  it('returns 500 (not 502) when Tiingo rejects the API key as unauthorized', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    fetchMock.mockImplementation(async () => new Response('Unauthorized', { status: 401 }));
+    const kv = fakeKV();
+    const res = await onRequestGet(makeContext({ STOCK_CACHE: kv }, 'ticker=VTI&date=2025-01-02&amount=1000'));
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).not.toMatch(/try again in a moment/i);
+    errSpy.mockRestore();
+  });
+
+  it('returns 500 without calling Tiingo when TIINGO_API_KEY is not configured', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const kv = fakeKV();
+    const res = await onRequestGet(
+      makeContext({ STOCK_CACHE: kv, TIINGO_API_KEY: '' }, 'ticker=VTI&date=2025-01-02&amount=1000')
+    );
+    expect(res.status).toBe(500);
+    expect(fetchMock).not.toHaveBeenCalled();
+    errSpy.mockRestore();
+  });
+
+  it('falls through to fetching from Tiingo when the KV binding is broken, without failing the request', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const kv = fakeKV();
+    kv.get.mockRejectedValueOnce(new Error('KV binding not configured'));
+    kv.put.mockRejectedValueOnce(new Error('KV binding not configured'));
+    const res = await onRequestGet(makeContext({ STOCK_CACHE: kv }, 'ticker=VTI&date=2025-01-02&amount=1000'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.valueToday).toBeCloseTo(1200, 5);
+    errSpy.mockRestore();
+  });
+
   it('defaults to including dividends unless dividends=false is passed', async () => {
     const kv = fakeKV();
     const res = await onRequestGet(
