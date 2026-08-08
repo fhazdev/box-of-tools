@@ -48,7 +48,15 @@ class UpstreamError extends Error {
 
 async function fetchSeries(ticker: string, env: Env): Promise<DailyPrice[]> {
   const cacheKey = `series:${ticker}`;
-  const cached = await env.STOCK_CACHE.get(cacheKey);
+
+  // A misconfigured/missing KV binding shouldn't take down the whole request —
+  // log it and fall through to fetching from Tiingo directly.
+  let cached: string | null = null;
+  try {
+    cached = await env.STOCK_CACHE.get(cacheKey);
+  } catch (err) {
+    console.error('STOCK_CACHE read failed (is the KV binding configured for this environment?)', err);
+  }
   if (cached) {
     try {
       return JSON.parse(cached) as DailyPrice[];
@@ -72,7 +80,11 @@ async function fetchSeries(ticker: string, env: Env): Promise<DailyPrice[]> {
   const raw = await response.json();
   const series = mapTiingoResponse(raw);
   if (series.length > 0) {
-    await env.STOCK_CACHE.put(cacheKey, JSON.stringify(series), { expirationTtl: CACHE_TTL_SECONDS });
+    try {
+      await env.STOCK_CACHE.put(cacheKey, JSON.stringify(series), { expirationTtl: CACHE_TTL_SECONDS });
+    } catch (err) {
+      console.error('STOCK_CACHE write failed (is the KV binding configured for this environment?)', err);
+    }
   }
   return series;
 }
@@ -80,6 +92,14 @@ async function fetchSeries(ticker: string, env: Env): Promise<DailyPrice[]> {
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   const url = new URL(request.url);
+
+  if (!env.TIINGO_API_KEY) {
+    console.error('TIINGO_API_KEY is not set for this environment — check Pages → Settings → Environment variables.');
+    return jsonResponse(
+      { error: 'Stock lookups are temporarily unavailable. Please try again later.' },
+      500
+    );
+  }
 
   const ticker = sanitizeTicker(url.searchParams.get('ticker') ?? '');
   const dateParam = url.searchParams.get('date') ?? '';
@@ -107,6 +127,14 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (err instanceof UpstreamError && err.status === 404) {
       return jsonResponse({ error: `"${ticker}" isn't a recognized ticker.` }, 404);
     }
+    if (err instanceof UpstreamError && (err.status === 401 || err.status === 403)) {
+      console.error('Tiingo rejected the request as unauthorized — check TIINGO_API_KEY.', err);
+      return jsonResponse(
+        { error: 'Stock lookups are temporarily unavailable. Please try again later.' },
+        500
+      );
+    }
+    console.error('Stock data fetch failed', err);
     return jsonResponse({ error: 'Could not fetch stock data right now — try again in a moment.' }, 502);
   }
 
